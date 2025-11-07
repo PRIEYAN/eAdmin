@@ -1,0 +1,656 @@
+# Replit Project Setup Prompt
+
+Create a React + Vite admin dashboard application with the following exact specifications:
+
+## Project Structure
+
+```
+project-root/
+├── client/
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── ui/ (shadcn/ui components)
+│   │   │   └── app-sidebar.tsx
+│   │   ├── pages/
+│   │   │   ├── login.tsx
+│   │   │   ├── dashboard-home.tsx
+│   │   │   ├── verified-teachers.tsx
+│   │   │   ├── pending-teachers.tsx
+│   │   │   ├── venues.tsx
+│   │   │   └── booked.tsx
+│   │   ├── lib/
+│   │   │   ├── api.ts (axios configuration)
+│   │   │   ├── auth-context.tsx
+│   │   │   └── queryClient.ts
+│   │   ├── hooks/
+│   │   ├── App.tsx
+│   │   ├── main.tsx
+│   │   └── index.css
+│   ├── index.html
+│   ├── package.json
+│   ├── vite.config.ts
+│   └── tailwind.config.ts
+└── shared/
+    └── schema.ts
+```
+
+## 1. Initialize Vite + React + TypeScript Project
+
+```bash
+npm create vite@latest client -- --template react-ts
+cd client
+npm install
+```
+
+## 2. Install Dependencies
+
+```bash
+cd client
+npm install react react-dom
+npm install axios@^1.13.1
+npm install @tanstack/react-query@^5.60.5
+npm install wouter@^3.3.5
+npm install @radix-ui/react-accordion @radix-ui/react-alert-dialog @radix-ui/react-aspect-ratio @radix-ui/react-avatar @radix-ui/react-checkbox @radix-ui/react-collapsible @radix-ui/react-context-menu @radix-ui/react-dialog @radix-ui/react-dropdown-menu @radix-ui/react-hover-card @radix-ui/react-label @radix-ui/react-menubar @radix-ui/react-navigation-menu @radix-ui/react-popover @radix-ui/react-progress @radix-ui/react-radio-group @radix-ui/react-scroll-area @radix-ui/react-select @radix-ui/react-separator @radix-ui/react-slider @radix-ui/react-slot @radix-ui/react-switch @radix-ui/react-tabs @radix-ui/react-toast @radix-ui/react-toggle @radix-ui/react-toggle-group @radix-ui/react-tooltip
+npm install class-variance-authority clsx tailwind-merge
+npm install lucide-react
+npm install tailwindcss-animate
+npm install -D tailwindcss postcss autoprefixer
+npm install -D @vitejs/plugin-react
+```
+
+## 3. Create Vite Configuration
+
+Create `client/vite.config.ts`:
+
+```typescript
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import path from "path";
+
+export default defineConfig({
+  plugins: [react()],
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "src"),
+    },
+  },
+  server: {
+    host: true,
+    port: 5173,
+  },
+});
+```
+
+## 4. Create TypeScript Configuration
+
+Create `tsconfig.json` in root:
+
+```json
+{
+  "include": ["client/src/**/*", "shared/**/*"],
+  "exclude": ["node_modules", "build", "dist", "**/*.test.ts"],
+  "compilerOptions": {
+    "incremental": true,
+    "tsBuildInfoFile": "./node_modules/typescript/tsbuildinfo",
+    "noEmit": true,
+    "module": "ESNext",
+    "strict": true,
+    "lib": ["esnext", "dom", "dom.iterable"],
+    "jsx": "preserve",
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "allowImportingTsExtensions": true,
+    "moduleResolution": "bundler",
+    "baseUrl": "./src",
+    "types": ["node", "vite/client"],
+    "paths": {
+      "@/*": ["*"]
+    }
+  }
+}
+```
+
+## 5. Create Shared Schema
+
+Create `shared/schema.ts`:
+
+```typescript
+// E-Venue specific types
+export interface Teacher {
+  id: string;
+  teacherId: string;
+  name: string;
+  email: string;
+  phoneNumber: string;
+  venuesBooked: number;
+  verified: boolean;
+}
+
+export interface Venue {
+  id: string;
+  name: string;
+  date: string;
+  time: string;
+  capacity: number;
+  booked: number;
+}
+
+export interface Admin {
+  id: string;
+  adminId: string;
+  name: string;
+  token?: string;
+}
+
+export interface DashboardStats {
+  totalVerifiedTeachers: number;
+  totalPendingTeachers: number;
+  totalVenues: number;
+  nextExamDate: string;
+}
+```
+
+## 6. Create Axios API Client (EXACT CONFIGURATION)
+
+Create `client/src/lib/api.ts` with this EXACT axios setup:
+
+```typescript
+import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
+
+// Get base URL from environment variable or use default (user's hosted backend)
+const BASE_URL = 'https://e-venue-backend.onrender.com';
+
+// Create axios instance
+export const apiClient = axios.create({
+  baseURL: BASE_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+// Request interceptor to attach JWT token
+apiClient.interceptors.request.use(
+  (config: InternalAxiosRequestConfig) => {
+    const token = localStorage.getItem('authToken');
+    if (token && config.headers) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error: AxiosError) => {
+    return Promise.reject(error);
+  }
+);
+
+// Response interceptor to handle 401 errors
+apiClient.interceptors.response.use(
+  (response: any) => response,
+  (error: AxiosError) => {
+    if (error.response?.status === 401) {
+      // Clear auth data and redirect to login
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('admin');
+      window.location.href = '/login';
+    }
+    return Promise.reject(error);
+  }
+);
+
+// API service functions
+export const api = {
+  // Authentication
+  auth: {
+    login: async (adminId: string, password: string) => {
+      const response = await apiClient.post('/api/admin/auth/login', {
+        adminId,
+        password,
+      });
+      return response.data;
+    },
+  },
+
+  // Verified Teachers
+  verifiedTeachers: {
+    getAll: async () => {
+      const response = await apiClient.get('/api/admin/verified/verifiedTeachers');
+      return response.data;
+    },
+  },
+
+  // Pending Teachers
+  pendingTeachers: {
+    getAll: async () => {
+      const response = await apiClient.get('/api/admin/pending/pendingTeachers');
+      return response.data;
+    },
+    verify: async (TeacherId: string) => {
+      const response = await apiClient.post(`/api/admin/pending/verify`, { TeacherId });
+      return response.data;
+    },
+    resetBookings: async () => {
+      const response = await apiClient.post('/api/admin/pending/resetBookings');
+      return response.data;
+    },
+  },
+
+  // Venues
+  venues: {
+    getAll: async () => {
+      const response = await apiClient.get('/api/admin/venue/getVenue');
+      return response.data;
+    },
+    getAllDetails: async () => {
+      const response = await apiClient.get('/api/admin/venue/allDetails');
+      return response.data;
+    },
+    add: async (venue: { Examdate: string; Examtime: string; numberOfTeachersCanBook: number }) => {
+      const response = await apiClient.post('/api/admin/venue/addVenue', venue);
+      return response.data;
+    },
+    delete: async (id: string) => {
+      const response = await apiClient.post(`/api/admin/venue/deleteVenue`, { id });
+      return response.data;
+    },
+    getAllExamVenuesWithDetails: async () => {
+      const response = await apiClient.get('/api/admin/venue/getAllExamVenuesWithDetails');
+      return response.data;
+    },
+    resetTeachersBookings: async () => {
+      const response = await apiClient.post('/api/admin/venue/resetTeachersBookings');
+      return response.data;
+    },
+  },
+};
+```
+
+## 7. Create Auth Context
+
+Create `client/src/lib/auth-context.tsx`:
+
+```typescript
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import type { Admin } from '@shared/schema';
+
+interface AuthContextType {
+  admin: Admin | null;
+  login: (admin: Admin, token: string) => void;
+  logout: () => void;
+  isAuthenticated: boolean;
+}
+
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const [admin, setAdmin] = useState<Admin | null>(null);
+
+  useEffect(() => {
+    const storedToken = localStorage.getItem('authToken');
+    const storedAdmin = localStorage.getItem('admin');
+    
+    if (storedToken && storedAdmin) {
+      try {
+        setAdmin(JSON.parse(storedAdmin));
+      } catch (e) {
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('admin');
+      }
+    }
+  }, []);
+
+  const login = (adminData: Admin, token: string) => {
+    localStorage.setItem('authToken', token);
+    localStorage.setItem('admin', JSON.stringify(adminData));
+    setAdmin(adminData);
+  };
+
+  const logout = () => {
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('admin');
+    setAdmin(null);
+  };
+
+  return (
+    <AuthContext.Provider value={{ admin, login, logout, isAuthenticated: !!admin }}>
+      {children}
+    </AuthContext.Provider>
+  );
+}
+
+export function useAuth() {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+}
+```
+
+## 8. Create React Query Client
+
+Create `client/src/lib/queryClient.ts`:
+
+```typescript
+import { QueryClient, QueryFunction } from "@tanstack/react-query";
+
+async function throwIfResNotOk(res: Response) {
+  if (!res.ok) {
+    const text = (await res.text()) || res.statusText;
+    throw new Error(`${res.status}: ${text}`);
+  }
+}
+
+export async function apiRequest(
+  method: string,
+  url: string,
+  data?: unknown | undefined,
+): Promise<Response> {
+  const res = await fetch(url, {
+    method,
+    headers: data ? { "Content-Type": "application/json" } : {},
+    body: data ? JSON.stringify(data) : undefined,
+    credentials: "include",
+  });
+
+  await throwIfResNotOk(res);
+  return res;
+}
+
+type UnauthorizedBehavior = "returnNull" | "throw";
+export const getQueryFn: <T>(options: {
+  on401: UnauthorizedBehavior;
+}) => QueryFunction<T> =
+  ({ on401: unauthorizedBehavior }) =>
+  async ({ queryKey }) => {
+    const res = await fetch(queryKey.join("/") as string, {
+      credentials: "include",
+    });
+
+    if (unauthorizedBehavior === "returnNull" && res.status === 401) {
+      return null;
+    }
+
+    await throwIfResNotOk(res);
+    return await res.json();
+  };
+
+export const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      queryFn: getQueryFn({ on401: "throw" }),
+      refetchInterval: false,
+      refetchOnWindowFocus: false,
+      staleTime: Infinity,
+      retry: false,
+    },
+    mutations: {
+      retry: false,
+    },
+  },
+});
+```
+
+## 9. Setup Tailwind CSS
+
+Initialize Tailwind:
+
+```bash
+cd client
+npx tailwindcss init -p
+```
+
+Create `client/tailwind.config.ts`:
+
+```typescript
+import type { Config } from "tailwindcss";
+
+export default {
+  darkMode: ["class"],
+  content: ["./index.html", "./src/**/*.{js,jsx,ts,tsx}"],
+  theme: {
+    extend: {
+      borderRadius: {
+        lg: ".5625rem",
+        md: ".375rem",
+        sm: ".1875rem",
+      },
+      colors: {
+        background: "hsl(var(--background) / <alpha-value>)",
+        foreground: "hsl(var(--foreground) / <alpha-value>)",
+        border: "hsl(var(--border) / <alpha-value>)",
+        input: "hsl(var(--input) / <alpha-value>)",
+        card: {
+          DEFAULT: "hsl(var(--card) / <alpha-value>)",
+          foreground: "hsl(var(--card-foreground) / <alpha-value>)",
+          border: "hsl(var(--card-border) / <alpha-value>)",
+        },
+        popover: {
+          DEFAULT: "hsl(var(--popover) / <alpha-value>)",
+          foreground: "hsl(var(--popover-foreground) / <alpha-value>)",
+          border: "hsl(var(--popover-border) / <alpha-value>)",
+        },
+        primary: {
+          DEFAULT: "hsl(var(--primary) / <alpha-value>)",
+          foreground: "hsl(var(--primary-foreground) / <alpha-value>)",
+          border: "var(--primary-border)",
+        },
+        secondary: {
+          DEFAULT: "hsl(var(--secondary) / <alpha-value>)",
+          foreground: "hsl(var(--secondary-foreground) / <alpha-value>)",
+          border: "var(--secondary-border)",
+        },
+        muted: {
+          DEFAULT: "hsl(var(--muted) / <alpha-value>)",
+          foreground: "hsl(var(--muted-foreground) / <alpha-value>)",
+          border: "var(--muted-border)",
+        },
+        accent: {
+          DEFAULT: "hsl(var(--accent) / <alpha-value>)",
+          foreground: "hsl(var(--accent-foreground) / <alpha-value>)",
+          border: "var(--accent-border)",
+        },
+        destructive: {
+          DEFAULT: "hsl(var(--destructive) / <alpha-value>)",
+          foreground: "hsl(var(--destructive-foreground) / <alpha-value>)",
+          border: "var(--destructive-border)",
+        },
+        ring: "hsl(var(--ring) / <alpha-value>)",
+        sidebar: {
+          ring: "hsl(var(--sidebar-ring) / <alpha-value>)",
+          DEFAULT: "hsl(var(--sidebar) / <alpha-value>)",
+          foreground: "hsl(var(--sidebar-foreground) / <alpha-value>)",
+          border: "hsl(var(--sidebar-border) / <alpha-value>)",
+        },
+        "sidebar-primary": {
+          DEFAULT: "hsl(var(--sidebar-primary) / <alpha-value>)",
+          foreground: "hsl(var(--sidebar-primary-foreground) / <alpha-value>)",
+          border: "var(--sidebar-primary-border)",
+        },
+        "sidebar-accent": {
+          DEFAULT: "hsl(var(--sidebar-accent) / <alpha-value>)",
+          foreground: "hsl(var(--sidebar-accent-foreground) / <alpha-value>)",
+          border: "var(--sidebar-accent-border)"
+        },
+      },
+      keyframes: {
+        "accordion-down": {
+          from: { height: "0" },
+          to: { height: "var(--radix-accordion-content-height)" },
+        },
+        "accordion-up": {
+          from: { height: "var(--radix-accordion-content-height)" },
+          to: { height: "0" },
+        },
+      },
+      animation: {
+        "accordion-down": "accordion-down 0.2s ease-out",
+        "accordion-up": "accordion-up 0.2s ease-out",
+      },
+    },
+  },
+  plugins: [require("tailwindcss-animate")],
+} satisfies Config;
+```
+
+## 10. Create Main App Component
+
+Create `client/src/App.tsx`:
+
+```typescript
+import { Switch, Route, Redirect } from "wouter";
+import { queryClient } from "./lib/queryClient";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { Toaster } from "@/components/ui/toaster";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/app-sidebar";
+import { AuthProvider, useAuth } from "@/lib/auth-context";
+import LoginPage from "@/pages/login";
+import DashboardHome from "@/pages/dashboard-home";
+import VerifiedTeachersPage from "@/pages/verified-teachers";
+import PendingTeachersPage from "@/pages/pending-teachers";
+import VenuesPage from "@/pages/venues";
+import BookedVenuesPage from "@/pages/booked";
+
+function ProtectedRoute({ component: Component }: { component: () => JSX.Element }) {
+  const { isAuthenticated } = useAuth();
+  
+  if (!isAuthenticated) {
+    return <Redirect to="/login" />;
+  }
+  
+  return <Component />;
+}
+
+function DashboardLayout({ children }: { children: React.ReactNode }) {
+  const { admin } = useAuth();
+  
+  const style = {
+    "--sidebar-width": "16rem",
+    "--sidebar-width-icon": "3rem",
+  };
+
+  return (
+    <SidebarProvider style={style as React.CSSProperties}>
+      <div className="flex h-screen w-full">
+        <AppSidebar />
+        <div className="flex flex-col flex-1">
+          <header className="flex items-center justify-between p-4 border-b">
+            <SidebarTrigger data-testid="button-sidebar-toggle" />
+            <div className="flex items-center gap-4">
+              <span className="text-sm text-muted-foreground">
+                Welcome, <span className="font-medium text-foreground">{admin?.name}</span>
+              </span>
+            </div>
+          </header>
+          <main className="flex-1 overflow-auto">
+            <div className="max-w-7xl mx-auto p-6">
+              {children}
+            </div>
+          </main>
+        </div>
+      </div>
+    </SidebarProvider>
+  );
+}
+
+function Router() {
+  const { isAuthenticated } = useAuth();
+  
+  return (
+    <Switch>
+      <Route path="/login">
+        {isAuthenticated ? <Redirect to="/" /> : <LoginPage />}
+      </Route>
+      <Route path="/">
+        <ProtectedRoute component={() => (
+          <DashboardLayout>
+            <DashboardHome />
+          </DashboardLayout>
+        )} />
+      </Route>
+      <Route path="/verified-teachers">
+        <ProtectedRoute component={() => (
+          <DashboardLayout>
+            <VerifiedTeachersPage />
+          </DashboardLayout>
+        )} />
+      </Route>
+      <Route path="/pending-teachers">
+        <ProtectedRoute component={() => (
+          <DashboardLayout>
+            <PendingTeachersPage />
+          </DashboardLayout>
+        )} />
+      </Route>
+      <Route path="/venues">
+        <ProtectedRoute component={() => (
+          <DashboardLayout>
+            <VenuesPage />
+          </DashboardLayout>
+        )} />
+      </Route>
+      <Route path="/booked">
+        <ProtectedRoute component={() => (
+          <DashboardLayout>
+            <BookedVenuesPage />
+          </DashboardLayout>
+        )} />
+      </Route>
+    </Switch>
+  );
+}
+
+export default function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <AuthProvider>
+          <Toaster />
+          <Router />
+        </AuthProvider>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+}
+```
+
+## 11. Create Main Entry Point
+
+Create `client/src/main.tsx`:
+
+```typescript
+import { createRoot } from "react-dom/client";
+import App from "./App";
+import "./index.css";
+
+createRoot(document.getElementById("root")!).render(<App />);
+```
+
+## 12. Setup shadcn/ui Components
+
+You'll need to install and configure shadcn/ui components. The key components needed are:
+- Button, Input, Card, Table, Dialog, Toast, Sidebar, Tooltip, etc.
+
+Use the shadcn/ui CLI or manually create the components from the Radix UI primitives.
+
+## 13. Important Notes
+
+1. **Axios Base URL**: The axios client is configured to use `https://e-venue-backend.onrender.com` as the base URL
+2. **JWT Authentication**: Tokens are stored in localStorage and automatically attached to requests via interceptors
+3. **401 Handling**: Unauthorized responses automatically clear auth and redirect to login
+4. **Routing**: Uses Wouter for client-side routing with protected routes
+5. **State Management**: Uses React Query for server state and Context API for auth state
+
+## 14. Run the Project
+
+```bash
+cd client
+npm run dev
+```
+
+The application will run on port 5173.
+
+---
+
+**CRITICAL**: Make sure the axios configuration in `client/src/lib/api.ts` uses the exact base URL `https://e-venue-backend.onrender.com` and includes the exact interceptors for JWT token handling and 401 error handling as shown above.
+
