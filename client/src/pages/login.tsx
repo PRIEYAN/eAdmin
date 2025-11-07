@@ -41,7 +41,7 @@ export default function LoginPage() {
       console.error('Login error:', error);
       toast({
         title: "Login Failed",
-        description: error.response?.data?.message || "Invalid credentials. Please try again.",
+        description: error.response?.data?.message || error.message || "Invalid credentials. Please try again.",
         variant: "destructive",
       });
     } finally {

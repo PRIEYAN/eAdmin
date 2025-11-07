@@ -7,6 +7,7 @@ export const apiClient = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  timeout: 30000,
 });
 
 apiClient.interceptors.request.use(
@@ -30,6 +31,17 @@ apiClient.interceptors.response.use(
       localStorage.removeItem('admin');
       window.location.href = '/login';
     }
+    
+    if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
+      const customError = error as any;
+      customError.message = 'Request timed out. Please try again.';
+    }
+    
+    if (!error.response) {
+      const customError = error as any;
+      customError.message = 'Network error. Please check your connection.';
+    }
+    
     return Promise.reject(error);
   }
 );

@@ -28,7 +28,7 @@ export default function PendingTeachersPage() {
     onError: (error: any) => {
       toast({
         title: "Verification Failed",
-        description: error.response?.data?.message || "Failed to verify teacher. Please try again.",
+        description: error.response?.data?.message || error.message || "Failed to verify teacher. Please try again.",
         variant: "destructive",
       });
     },
@@ -46,7 +46,7 @@ export default function PendingTeachersPage() {
     onError: (error: any) => {
       toast({
         title: "Reset Failed",
-        description: error.response?.data?.message || "Failed to reset bookings. Please try again.",
+        description: error.response?.data?.message || error.message || "Failed to reset bookings. Please try again.",
         variant: "destructive",
       });
     },

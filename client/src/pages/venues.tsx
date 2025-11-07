@@ -34,6 +34,7 @@ export default function VenuesPage() {
     mutationFn: (id: string) => api.venues.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/venue/getVenue'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/venue/getAllExamVenuesWithDetails'] });
       toast({
         title: "Venue Deleted",
         description: "The exam venue has been successfully deleted.",
@@ -43,7 +44,7 @@ export default function VenuesPage() {
     onError: (error: any) => {
       toast({
         title: "Delete Failed",
-        description: error.response?.data?.message || "Failed to delete venue. Please try again.",
+        description: error.response?.data?.message || error.message || "Failed to delete venue. Please try again.",
         variant: "destructive",
       });
     },
@@ -54,6 +55,7 @@ export default function VenuesPage() {
       api.venues.add(venue),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/venue/getVenue'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/venue/getAllExamVenuesWithDetails'] });
       setIsDialogOpen(false);
       setExamDate("");
       setExamTime("");
@@ -66,7 +68,7 @@ export default function VenuesPage() {
     onError: (error: any) => {
       toast({
         title: "Add Venue Failed",
-        description: error.response?.data?.message || "Failed to add venue. Please try again.",
+        description: error.response?.data?.message || error.message || "Failed to add venue. Please try again.",
         variant: "destructive",
       });
     },
