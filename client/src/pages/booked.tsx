@@ -1,120 +1,165 @@
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, Users } from "lucide-react";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { useQuery } from "@tanstack/react-query";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api";
-import { Skeleton } from "@/components/ui/skeleton";
+import { saveAs } from "file-saver";
+import * as XLSX from "xlsx";
 
 export default function BookedVenuesPage() {
-  const { data, isLoading, error } = useQuery({
-    queryKey: ['/api/admin/venue/getAllExamVenuesWithDetails'],
-    queryFn: () => api.venues.getAllExamVenuesWithDetails(),
-  });
+  const [venues, setVenues] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const examVenues = data?.venues || [];
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const data = await api.venues.getAllDetails();
+        setVenues(data.venues || []);
+      } catch (err) {
+        console.error("Error fetching venues:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  const handleDownloadExcel = () => {
+    const rows: any[] = [];
+
+    venues.forEach((venue) => {
+      const capacity =
+        venue.Book?.numberOfTeachersCanBook ??
+        venue.numberOfTeachersCanBook ??
+        0;
+
+      const booked =
+        venue.Book?.bookedBy ??
+        venue.bookedBy ??
+        [];
+
+      const rowsToRender = Math.max(capacity, booked.length || 1);
+
+      for (let i = 0; i < rowsToRender; i++) {
+        const b = booked[i] || {};
+        rows.push({
+          VenueId: venue.ExamVenueId || "",
+          VenueName: venue.VenueName || "",
+          Date: venue.Examdate || "",
+          Time: venue.Examtime || "",
+          Name: b.name || "",
+          Email: b.email || "",
+          Phone: b.phoneNumber || "",
+          BookedOn: b.bookedAt
+            ? new Date(b.bookedAt).toLocaleString()
+            : "",
+        });
+      }
+    });
+
+    const worksheet = XLSX.utils.json_to_sheet(rows);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "BookedVenues");
+    const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
+    const blob = new Blob([excelBuffer], { type: "application/octet-stream" });
+    saveAs(blob, "booked_venues.xlsx");
+  };
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-semibold mb-2" data-testid="text-page-title">Booked Venues</h1>
-        <p className="text-muted-foreground">View all exam venues with enrolled teachers</p>
+      {/* Header Section */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">Booked Venues</h1>
+          <p className="text-muted-foreground mt-2">
+            {isLoading
+              ? "Loading..."
+              : `${venues.length} venues found`}
+          </p>
+        </div>
+        <Button
+          onClick={handleDownloadExcel}
+          disabled={isLoading || venues.length === 0}
+        >
+          Download Excel
+        </Button>
       </div>
 
-      {isLoading ? (
-        <div className="space-y-4">
-          {[1, 2, 3].map((i) => (
-            <Skeleton key={i} className="h-24 w-full" />
-          ))}
-        </div>
-      ) : error ? (
-        <div className="rounded-lg border border-destructive bg-destructive/10 p-4 text-center">
-          <p className="text-destructive">Failed to load booked venues. Please try again later.</p>
-        </div>
-      ) : examVenues.length === 0 ? (
-        <div className="rounded-lg border border-dashed p-12 text-center">
-          <p className="text-muted-foreground">No booked venues found</p>
-        </div>
-      ) : (
-        <Accordion type="single" collapsible className="space-y-4">
-          {examVenues.map((venue: any, index: number) => (
-          <AccordionItem key={venue.id} value={venue.id} className="border rounded-lg">
-            <Card>
-              <CardHeader className="pb-3">
-                <AccordionTrigger className="hover:no-underline" data-testid={`accordion-venue-${venue.id}`}>
-                  <div className="flex items-center justify-between gap-4 w-full pr-4">
-                    <CardTitle className="text-lg font-semibold">
-                      Exam Venue {index + 1}
-                    </CardTitle>
-                    <div className="flex items-center gap-4 flex-wrap">
-                      <div className="flex items-center gap-2 text-sm">
-                        <Calendar className="h-4 w-4 text-muted-foreground" />
-                        <span>{new Date(venue.Examdate).toLocaleDateString()}</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-sm">
-                        <Clock className="h-4 w-4 text-muted-foreground" />
-                        <span>{venue.Examtime}</span>
-                      </div>
-                      <Badge variant="secondary">
-                        <Users className="h-3 w-3 mr-1" />
-                        {venue.teachers.length}/{venue.numberOfTeachersCanBook}
-                      </Badge>
-                    </div>
-                  </div>
-                </AccordionTrigger>
-              </CardHeader>
-              <AccordionContent>
-                <CardContent className="pt-4">
-                  {venue.teachers.length === 0 ? (
-                    <p className="text-center text-muted-foreground py-8">
-                      No teachers have booked this venue yet
-                    </p>
-                  ) : (
-                    <div className="rounded-lg border">
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>Teacher ID</TableHead>
-                            <TableHead>Name</TableHead>
-                            <TableHead>Email</TableHead>
-                            <TableHead>Phone</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {venue.teachers.map((teacher) => (
-                            <TableRow key={teacher.id} data-testid={`row-booked-teacher-${teacher.id}`}>
-                              <TableCell className="font-mono text-sm">
-                                {teacher.teacherId}
-                              </TableCell>
-                              <TableCell className="font-medium">{teacher.name}</TableCell>
-                              <TableCell>{teacher.email}</TableCell>
-                              <TableCell>{teacher.phoneNumber}</TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </div>
-                  )}
-                </CardContent>
-              </AccordionContent>
-            </Card>
-          </AccordionItem>
-          ))}
-        </Accordion>
-      )}
+      {/* Table Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle>All Booked Venues</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Venue ID</TableHead>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Time</TableHead>
+                  <TableHead>Teacher Name</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Phone</TableHead>
+                  <TableHead>Booked On</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {isLoading ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center">
+                      Loading...
+                    </TableCell>
+                  </TableRow>
+                ) : venues.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center">
+                      No venues found
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  venues.flatMap((venue) => {
+                    const capacity =
+                      venue.Book?.numberOfTeachersCanBook ??
+                      venue.numberOfTeachersCanBook ??
+                      0;
+
+                    const booked =
+                      venue.Book?.bookedBy ??
+                      venue.bookedBy ??
+                      [];
+
+                    const rowsToRender = Math.max(capacity, booked.length || 1);
+
+                    return Array.from({ length: rowsToRender }).map((_, i) => {
+                      const b = booked[i] || {};
+                      return (
+                        <TableRow key={`${venue.ExamVenueId}-row-${i}`}>
+                          <TableCell>{venue.ExamVenueId}</TableCell>
+                          <TableCell>
+                            {venue.Examdate
+                              ? new Date(venue.Examdate).toLocaleDateString()
+                              : ""}
+                          </TableCell>
+                          <TableCell>{venue.Examtime || ""}</TableCell>
+                          <TableCell>{b.name || ""}</TableCell>
+                          <TableCell>{b.email || ""}</TableCell>
+                          <TableCell>{b.phoneNumber || ""}</TableCell>
+                          <TableCell>
+                            {b.bookedAt
+                              ? new Date(b.bookedAt).toLocaleString()
+                              : ""}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    });
+                  })
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

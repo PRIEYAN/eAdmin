@@ -1,195 +1,318 @@
-import { useState } from "react";
-import { VenueCard } from "@/components/venue-card";
-import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Search, Plus, Trash2 } from "lucide-react";
+import type { Venue } from "@shared/schema";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { api } from "@/lib/api";
-import { queryClient } from "@/lib/queryClient";
-import { Skeleton } from "@/components/ui/skeleton";
 
 export default function VenuesPage() {
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [examDate, setExamDate] = useState("");
-  const [examTime, setExamTime] = useState("");
-  const [capacity, setCapacity] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [venues, setVenues] = useState<any[]>([]); // Use any[] for now since backend shape changed
+  const [isLoading, setIsLoading] = useState(true);
+  const [isAdding, setIsAdding] = useState(false);
+  const [newVenue, setNewVenue] = useState({
+    date: "",
+    time: "",
+    capacity: "",
+  });
   const { toast } = useToast();
 
-  const { data, isLoading, error } = useQuery({
-    queryKey: ['/api/admin/venue/getVenue'],
-    queryFn: () => api.venues.getAll(),
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: (id: string) => api.venues.delete(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/venue/getVenue'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/venue/getAllExamVenuesWithDetails'] });
+  const fetchVenues = async () => {
+    try {
+      const data = await api.venues.getAll(); // Use new endpoint
+      setVenues(data.venues); // Use data.venues from enriched response
+    } catch (error) {
+      console.error('Error fetching venues:', error);
       toast({
-        title: "Venue Deleted",
-        description: "The exam venue has been successfully deleted.",
+        title: "Error loading venues",
+        description: "Failed to fetch venues. Please try again.",
         variant: "destructive",
       });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Delete Failed",
-        description: error.response?.data?.message || error.message || "Failed to delete venue. Please try again.",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const addMutation = useMutation({
-    mutationFn: (venue: { Examdate: string; Examtime: string; numberOfTeachersCanBook: number }) => 
-      api.venues.add(venue),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/venue/getVenue'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/venue/getAllExamVenuesWithDetails'] });
-      setIsDialogOpen(false);
-      setExamDate("");
-      setExamTime("");
-      setCapacity("");
-      toast({
-        title: "Venue Added",
-        description: "New exam venue has been successfully created.",
-      });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Add Venue Failed",
-        description: error.response?.data?.message || error.message || "Failed to add venue. Please try again.",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const handleDelete = (id: string) => {
-    deleteMutation.mutate(id);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleAddVenue = (e: React.FormEvent) => {
+  useEffect(() => {
+    fetchVenues();
+  }, []);
+
+  const filteredVenues = venues.filter(venue =>
+    (venue.Examdate + ' ' + venue.Examtime).toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const handleAddVenue = async (e: React.FormEvent) => {
     e.preventDefault();
-    addMutation.mutate({
-      Examdate: examDate,
-      Examtime: examTime,
-      numberOfTeachersCanBook: parseInt(capacity, 10),
-    });
+    
+    // Validate form data before submission
+    const capacity = parseInt(newVenue.capacity, 10);
+    if (isNaN(capacity) || capacity < 1) {
+      toast({
+        title: "Validation error",
+        description: "Please enter a valid capacity (minimum 1).",
+        variant: "destructive",
+      });
+      return;
+    }
+    if (!newVenue.date) {
+      toast({
+        title: "Validation error",
+        description: "Date is required.",
+        variant: "destructive",
+      });
+      return;
+    }
+    if (!newVenue.time) {
+      toast({
+        title: "Validation error",
+        description: "Time is required.",
+        variant: "destructive",
+      });
+      return;
+    }
+    setIsAdding(true);
+    try {
+      await api.venues.add({
+        Examdate: newVenue.date,
+        Examtime: newVenue.time,
+        numberOfTeachersCanBook: capacity,
+      } as any);
+      setNewVenue({ date: "", time: "", capacity: "" });
+      toast({
+        title: "Venue added",
+        description: `Venue has been added successfully.`,
+      });
+      // Refetch venues to ensure UI matches backend
+      await fetchVenues();
+    } catch (error) {
+      console.error('Error adding venue:', error);
+      toast({
+        title: "Failed to add venue",
+        description: "Could not add venue. Please check your input and try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsAdding(false);
+    }
   };
 
-  const venues = data?.venues || [];
+  const handleDeleteVenue = async (venue: any) => {
+    try {
+      await api.venues.delete(venue.ExamVenueId); // Use ExamVenueId for delete
+      toast({
+        title: "Venue deleted",
+        description: `Venue for ${venue.Examdate} ${venue.Examtime} has been removed.`,
+        variant: "destructive",
+      });
+      // Refetch venues to ensure UI matches backend
+      await fetchVenues();
+    } catch (error) {
+      console.error('Error deleting venue:', error);
+      toast({
+        title: "Delete failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDeleteAllVenues = async () => {
+    if (!window.confirm("Are you sure you want to delete all venues and reset all teacher bookings? This action cannot be undone.")) return;
+    try {
+      await api.venues.resetTeachersBookings();
+      toast({
+        title: "All venues deleted",
+        description: "All venues and teacher bookings have been reset.",
+        variant: "destructive",
+      });
+      await fetchVenues();
+    } catch (error) {
+      const errMsg = (error instanceof Error) ? error.message : "Failed to delete all venues.";
+      toast({
+        title: "Delete all failed",
+        description: errMsg,
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <div className="space-y-6">
-      <div className="flex items-start justify-between gap-4 flex-wrap">
-        <div>
-          <h1 className="text-3xl font-semibold mb-2" data-testid="text-page-title">Exam Venues</h1>
-          <p className="text-muted-foreground">Manage exam venues and their capacities</p>
-        </div>
-        <Button onClick={() => setIsDialogOpen(true)} data-testid="button-add-venue">
-          <Plus className="h-4 w-4 mr-2" />
-          Add Venue
-        </Button>
+      <div>
+        <h1 className="text-3xl font-bold" data-testid="text-page-title">Venues</h1>
+        <p className="text-muted-foreground mt-2">
+          {isLoading ? "Loading..." : `${filteredVenues.length} venues available`}
+        </p>
       </div>
 
-      {isLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {[1, 2, 3].map((i) => (
-            <Skeleton key={i} className="h-48" />
-          ))}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2">
+          <Button onClick={handleDeleteAllVenues} variant="destructive" className="mb-4">Delete All Venues</Button>
+          <Card>
+            <CardHeader>
+              <CardTitle>Venue List</CardTitle>
+              <div className="relative mt-4">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search venues..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                  data-testid="input-search"
+                />
+              </div>
+            </CardHeader>
+            <CardContent>
+              {isLoading ? (
+                <p className="text-center text-muted-foreground py-8">Loading venues...</p>
+              ) : (
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="text-sm font-medium uppercase">Venue Id</TableHead>
+                        <TableHead className="text-sm font-medium uppercase">Date</TableHead>
+                        <TableHead className="text-sm font-medium uppercase">Time</TableHead>
+                        <TableHead className="text-sm font-medium uppercase text-right">Capacity</TableHead>
+                        <TableHead className="text-sm font-medium uppercase text-right">Booked</TableHead>
+                        <TableHead className="text-sm font-medium uppercase text-right">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredVenues.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                            No venues found
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        filteredVenues.map((venue) => (
+                          <TableRow key={venue.ExamVenueId} data-testid={`row-venue-${venue.ExamVenueId}`}>
+                            <TableCell className="text-muted-foreground">{venue.ExamVenueId}</TableCell>
+                            <TableCell className="text-muted-foreground">{venue.Examdate}</TableCell>
+                            <TableCell className="text-muted-foreground">{venue.Examtime}</TableCell>
+                            <TableCell className="text-right tabular-nums">{venue.Book.numberOfTeachersCanBook}</TableCell>
+                            <TableCell className="text-right tabular-nums">{venue.Book.bookedBy?.length || 0}</TableCell>
+                            <TableCell className="text-right">
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button
+                                    size="icon"
+                                    variant="ghost"
+                                    data-testid={`button-delete-${venue.ExamVenueId}`}
+                                  >
+                                    <Trash2 className="w-4 h-4 text-destructive" />
+                                  </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>Delete venue?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      Are you sure you want to delete the venue for {venue.Examdate} {venue.Examtime}? This action cannot be undone.
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogAction
+                                      onClick={() => handleDeleteVenue(venue)}
+                                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                    >
+                                      Delete
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </div>
-      ) : error ? (
-        <div className="rounded-lg border border-destructive bg-destructive/10 p-4 text-center">
-          <p className="text-destructive">Failed to load venues. Please try again later.</p>
-        </div>
-      ) : venues.length === 0 ? (
-        <div className="rounded-lg border border-dashed p-12 text-center">
-          <p className="text-muted-foreground mb-4">No exam venues found</p>
-          <Button onClick={() => setIsDialogOpen(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            Add Your First Venue
-          </Button>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {venues.map((venue: any) => (
-            <VenueCard 
-              key={venue.id} 
-              venue={venue} 
-              onDelete={handleDelete}
-              isDeleting={deleteMutation.isPending}
-            />
-          ))}
-        </div>
-      )}
 
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent data-testid="dialog-add-venue">
-          <DialogHeader>
-            <DialogTitle>Add New Exam Venue</DialogTitle>
-            <DialogDescription>
-              Create a new exam venue with date, time, and capacity information.
-            </DialogDescription>
-          </DialogHeader>
-          <form onSubmit={handleAddVenue}>
-            <div className="space-y-4 py-4">
-              <div className="space-y-2">
-                <Label htmlFor="examDate">Exam Date</Label>
-                <Input
-                  id="examDate"
-                  type="date"
-                  value={examDate}
-                  onChange={(e) => setExamDate(e.target.value)}
-                  required
-                  data-testid="input-exam-date"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="examTime">Exam Time</Label>
-                <Input
-                  id="examTime"
-                  type="time"
-                  value={examTime}
-                  onChange={(e) => setExamTime(e.target.value)}
-                  required
-                  data-testid="input-exam-time"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="capacity">Teacher Capacity</Label>
-                <Input
-                  id="capacity"
-                  type="number"
-                  min="1"
-                  placeholder="Enter maximum number of teachers"
-                  value={capacity}
-                  onChange={(e) => setCapacity(e.target.value)}
-                  required
-                  data-testid="input-capacity"
-                />
-              </div>
-            </div>
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)} disabled={addMutation.isPending}>
-                Cancel
-              </Button>
-              <Button type="submit" disabled={addMutation.isPending} data-testid="button-submit-venue">
-                {addMutation.isPending ? "Creating..." : "Create Venue"}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
+        <div>
+          <Card>
+            <CardHeader>
+              <CardTitle>Add New Venue</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleAddVenue} className="space-y-4">
+                {/* Venue Name input removed */}
+                <div className="space-y-2">
+                  <Label htmlFor="date">Date</Label>
+                  <Input
+                    id="date"
+                    type="date"
+                    value={newVenue.date}
+                    onChange={(e) => setNewVenue({ ...newVenue, date: e.target.value })}
+                    required
+                    data-testid="input-venue-date"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="time">Time</Label>
+                  <Input
+                    id="time"
+                    type="time"
+                    value={newVenue.time}
+                    onChange={(e) => setNewVenue({ ...newVenue, time: e.target.value })}
+                    required
+                    data-testid="input-venue-time"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="capacity">Capacity</Label>
+                  <Input
+                    id="capacity"
+                    type="number"
+                    placeholder="e.g., 150"
+                    value={newVenue.capacity}
+                    onChange={(e) => setNewVenue({ ...newVenue, capacity: e.target.value })}
+                    required
+                    min="1"
+                    data-testid="input-venue-capacity"
+                  />
+                </div>
+                <Button 
+                  type="submit" 
+                  className="w-full" 
+                  disabled={isAdding}
+                  data-testid="button-add-venue"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  {isAdding ? "Adding..." : "Add Venue"}
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   );
 }

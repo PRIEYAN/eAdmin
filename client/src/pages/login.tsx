@@ -21,27 +21,25 @@ export default function LoginPage() {
     e.preventDefault();
     setIsLoading(true);
 
-    try {
+      try {
       const response = await api.auth.login(adminId, password);
-      
+      // Backend only returns { message, token }, so create minimal adminData
       const adminData = {
-        id: response.admin.id || response.admin._id,
-        adminId: response.admin.adminId,
-        name: response.admin.name,
+        id: adminId, // Use adminId as id since backend does not provide a separate id
+        adminId: adminId,
+        name: "Admin",
       };
-      
       login(adminData, response.token);
-      setLocation('/');
-      
       toast({
-        title: "Login Successful",
-        description: `Welcome back, ${adminData.name}!`,
+        title: "Login successful",
+        description: "Welcome back to E-Venue Admin",
       });
-    } catch (error: any) {
-      console.error('Login error:', error);
+      setLocation("/");
+    } catch (error) {
+      const axiosError = error as AxiosError<{ message?: string }>;
       toast({
-        title: "Login Failed",
-        description: error.response?.data?.message || error.message || "Invalid credentials. Please try again.",
+        title: "Login failed",
+        description: axiosError.response?.data?.message || "Invalid credentials. Please try again.",
         variant: "destructive",
       });
     } finally {
