@@ -1,18 +1,39 @@
-import { sql } from "drizzle-orm";
-import { pgTable, text, varchar } from "drizzle-orm/pg-core";
-import { createInsertSchema } from "drizzle-zod";
-import { z } from "zod";
+export interface Teacher {
+  id: string;
+  teacherId: string;
+  name: string;
+  email: string;
+  phoneNumber: string;
+  venuesBooked: number;
+  verified: boolean;
+}
 
-export const users = pgTable("users", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  username: text("username").notNull().unique(),
-  password: text("password").notNull(),
-});
+export interface Venue {
+  id: string;
+  Examdate: string;
+  Examtime: string;
+  numberOfTeachersCanBook: number;
+  bookedTeachers?: number;
+}
 
-export const insertUserSchema = createInsertSchema(users).pick({
-  username: true,
-  password: true,
-});
+export interface Admin {
+  id: string;
+  adminId: string;
+  name: string;
+  token?: string;
+}
 
-export type InsertUser = z.infer<typeof insertUserSchema>;
-export type User = typeof users.$inferSelect;
+export interface DashboardStats {
+  totalVerifiedTeachers: number;
+  totalPendingTeachers: number;
+  totalVenues: number;
+  nextExamDate: string;
+}
+
+export interface ExamVenueDetail {
+  id: string;
+  Examdate: string;
+  Examtime: string;
+  numberOfTeachersCanBook: number;
+  teachers: Teacher[];
+}
