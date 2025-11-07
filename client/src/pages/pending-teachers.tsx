@@ -1,63 +1,66 @@
-import { useState } from "react";
 import { TeachersTable } from "@/components/teachers-table";
 import { Button } from "@/components/ui/button";
 import { RotateCcw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { api } from "@/lib/api";
+import { queryClient } from "@/lib/queryClient";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function PendingTeachersPage() {
   const { toast } = useToast();
-  const [isResetting, setIsResetting] = useState(false);
 
-  //todo: remove mock functionality
-  const mockTeachers = [
-    {
-      id: '5',
-      teacherId: 'T005',
-      name: 'Dr. Robert Wilson',
-      email: 'rwilson@university.edu',
-      phoneNumber: '+1 (555) 567-8901',
-      venuesBooked: 0,
-      verified: false,
-    },
-    {
-      id: '6',
-      teacherId: 'T006',
-      name: 'Prof. Lisa Anderson',
-      email: 'landerson@college.edu',
-      phoneNumber: '+1 (555) 678-9012',
-      venuesBooked: 0,
-      verified: false,
-    },
-    {
-      id: '7',
-      teacherId: 'T007',
-      name: 'Dr. James Taylor',
-      email: 'jtaylor@academy.edu',
-      phoneNumber: '+1 (555) 789-0123',
-      venuesBooked: 0,
-      verified: false,
-    },
-  ];
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['/api/admin/pending/pendingTeachers'],
+    queryFn: () => api.pendingTeachers.getAll(),
+  });
 
-  const handleVerify = (teacherId: string) => {
-    console.log('Verify teacher:', teacherId);
-    toast({
-      title: "Teacher Verified",
-      description: `Teacher ${teacherId} has been successfully verified.`,
-    });
-  };
+  const verifyMutation = useMutation({
+    mutationFn: (teacherId: string) => api.pendingTeachers.verify(teacherId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/pending/pendingTeachers'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/verified/verifiedTeachers'] });
+      toast({
+        title: "Teacher Verified",
+        description: "Teacher has been successfully verified.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Verification Failed",
+        description: error.response?.data?.message || "Failed to verify teacher. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
 
-  const handleResetBookings = () => {
-    setIsResetting(true);
-    //todo: remove mock functionality
-    setTimeout(() => {
-      setIsResetting(false);
+  const resetMutation = useMutation({
+    mutationFn: () => api.pendingTeachers.resetBookings(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/pending/pendingTeachers'] });
       toast({
         title: "Bookings Reset",
         description: "All pending teacher bookings have been reset.",
       });
-    }, 1000);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Reset Failed",
+        description: error.response?.data?.message || "Failed to reset bookings. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleVerify = (teacherId: string) => {
+    verifyMutation.mutate(teacherId);
   };
+
+  const handleResetBookings = () => {
+    resetMutation.mutate();
+  };
+
+  const teachers = data?.teachers || [];
 
   return (
     <div className="space-y-6">
@@ -69,7 +72,7 @@ export default function PendingTeachersPage() {
         <Button
           variant="outline"
           onClick={handleResetBookings}
-          disabled={isResetting}
+          disabled={resetMutation.isPending}
           data-testid="button-reset-bookings"
         >
           <RotateCcw className="h-4 w-4 mr-2" />
@@ -77,11 +80,20 @@ export default function PendingTeachersPage() {
         </Button>
       </div>
 
-      <TeachersTable 
-        teachers={mockTeachers} 
-        showVerifyButton={true}
-        onVerify={handleVerify}
-      />
+      {isLoading ? (
+        <Skeleton className="h-96 w-full" />
+      ) : error ? (
+        <div className="rounded-lg border border-destructive bg-destructive/10 p-4 text-center">
+          <p className="text-destructive">Failed to load pending teachers. Please try again later.</p>
+        </div>
+      ) : (
+        <TeachersTable 
+          teachers={teachers} 
+          showVerifyButton={true}
+          onVerify={handleVerify}
+          isVerifying={verifyMutation.isPending}
+        />
+      )}
     </div>
   );
 }

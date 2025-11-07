@@ -15,54 +15,17 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/lib/api";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function BookedVenuesPage() {
-  //todo: remove mock functionality
-  const mockExamVenues = [
-    {
-      id: '1',
-      Examdate: '2024-12-15',
-      Examtime: '09:00 AM',
-      numberOfTeachersCanBook: 50,
-      teachers: [
-        {
-          id: '1',
-          teacherId: 'T001',
-          name: 'Dr. John Smith',
-          email: 'john.smith@university.edu',
-          phoneNumber: '+1 (555) 123-4567',
-          venuesBooked: 3,
-          verified: true,
-        },
-        {
-          id: '2',
-          teacherId: 'T002',
-          name: 'Prof. Sarah Johnson',
-          email: 'sarah.j@college.edu',
-          phoneNumber: '+1 (555) 234-5678',
-          venuesBooked: 2,
-          verified: true,
-        },
-      ],
-    },
-    {
-      id: '2',
-      Examdate: '2024-12-16',
-      Examtime: '10:00 AM',
-      numberOfTeachersCanBook: 45,
-      teachers: [
-        {
-          id: '3',
-          teacherId: 'T003',
-          name: 'Dr. Michael Chen',
-          email: 'mchen@academy.edu',
-          phoneNumber: '+1 (555) 345-6789',
-          venuesBooked: 4,
-          verified: true,
-        },
-      ],
-    },
-  ];
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['/api/admin/venue/getAllExamVenuesWithDetails'],
+    queryFn: () => api.venues.getAllExamVenuesWithDetails(),
+  });
+
+  const examVenues = data?.venues || [];
 
   return (
     <div className="space-y-6">
@@ -71,8 +34,23 @@ export default function BookedVenuesPage() {
         <p className="text-muted-foreground">View all exam venues with enrolled teachers</p>
       </div>
 
-      <Accordion type="single" collapsible className="space-y-4">
-        {mockExamVenues.map((venue, index) => (
+      {isLoading ? (
+        <div className="space-y-4">
+          {[1, 2, 3].map((i) => (
+            <Skeleton key={i} className="h-24 w-full" />
+          ))}
+        </div>
+      ) : error ? (
+        <div className="rounded-lg border border-destructive bg-destructive/10 p-4 text-center">
+          <p className="text-destructive">Failed to load booked venues. Please try again later.</p>
+        </div>
+      ) : examVenues.length === 0 ? (
+        <div className="rounded-lg border border-dashed p-12 text-center">
+          <p className="text-muted-foreground">No booked venues found</p>
+        </div>
+      ) : (
+        <Accordion type="single" collapsible className="space-y-4">
+          {examVenues.map((venue: any, index: number) => (
           <AccordionItem key={venue.id} value={venue.id} className="border rounded-lg">
             <Card>
               <CardHeader className="pb-3">
@@ -134,8 +112,9 @@ export default function BookedVenuesPage() {
               </AccordionContent>
             </Card>
           </AccordionItem>
-        ))}
-      </Accordion>
+          ))}
+        </Accordion>
+      )}
     </div>
   );
 }

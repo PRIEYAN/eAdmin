@@ -13,6 +13,10 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { api } from "@/lib/api";
+import { queryClient } from "@/lib/queryClient";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function VenuesPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -21,61 +25,67 @@ export default function VenuesPage() {
   const [capacity, setCapacity] = useState("");
   const { toast } = useToast();
 
-  //todo: remove mock functionality
-  const mockVenues = [
-    {
-      id: '1',
-      Examdate: '2024-12-15',
-      Examtime: '09:00 AM',
-      numberOfTeachersCanBook: 50,
-      bookedTeachers: 35,
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['/api/admin/venue/getVenue'],
+    queryFn: () => api.venues.getAll(),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => api.venues.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/venue/getVenue'] });
+      toast({
+        title: "Venue Deleted",
+        description: "The exam venue has been successfully deleted.",
+        variant: "destructive",
+      });
     },
-    {
-      id: '2',
-      Examdate: '2024-12-15',
-      Examtime: '02:00 PM',
-      numberOfTeachersCanBook: 40,
-      bookedTeachers: 28,
+    onError: (error: any) => {
+      toast({
+        title: "Delete Failed",
+        description: error.response?.data?.message || "Failed to delete venue. Please try again.",
+        variant: "destructive",
+      });
     },
-    {
-      id: '3',
-      Examdate: '2024-12-16',
-      Examtime: '10:00 AM',
-      numberOfTeachersCanBook: 45,
-      bookedTeachers: 45,
+  });
+
+  const addMutation = useMutation({
+    mutationFn: (venue: { Examdate: string; Examtime: string; numberOfTeachersCanBook: number }) => 
+      api.venues.add(venue),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/venue/getVenue'] });
+      setIsDialogOpen(false);
+      setExamDate("");
+      setExamTime("");
+      setCapacity("");
+      toast({
+        title: "Venue Added",
+        description: "New exam venue has been successfully created.",
+      });
     },
-    {
-      id: '4',
-      Examdate: '2024-12-16',
-      Examtime: '03:00 PM',
-      numberOfTeachersCanBook: 35,
-      bookedTeachers: 12,
+    onError: (error: any) => {
+      toast({
+        title: "Add Venue Failed",
+        description: error.response?.data?.message || "Failed to add venue. Please try again.",
+        variant: "destructive",
+      });
     },
-  ];
+  });
 
   const handleDelete = (id: string) => {
-    console.log('Delete venue:', id);
-    toast({
-      title: "Venue Deleted",
-      description: "The exam venue has been successfully deleted.",
-      variant: "destructive",
-    });
+    deleteMutation.mutate(id);
   };
 
   const handleAddVenue = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Add venue:', { examDate, examTime, capacity });
-    
-    setIsDialogOpen(false);
-    setExamDate("");
-    setExamTime("");
-    setCapacity("");
-    
-    toast({
-      title: "Venue Added",
-      description: "New exam venue has been successfully created.",
+    addMutation.mutate({
+      Examdate: examDate,
+      Examtime: examTime,
+      numberOfTeachersCanBook: parseInt(capacity, 10),
     });
   };
+
+  const venues = data?.venues || [];
 
   return (
     <div className="space-y-6">
@@ -90,11 +100,36 @@ export default function VenuesPage() {
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {mockVenues.map((venue) => (
-          <VenueCard key={venue.id} venue={venue} onDelete={handleDelete} />
-        ))}
-      </div>
+      {isLoading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {[1, 2, 3].map((i) => (
+            <Skeleton key={i} className="h-48" />
+          ))}
+        </div>
+      ) : error ? (
+        <div className="rounded-lg border border-destructive bg-destructive/10 p-4 text-center">
+          <p className="text-destructive">Failed to load venues. Please try again later.</p>
+        </div>
+      ) : venues.length === 0 ? (
+        <div className="rounded-lg border border-dashed p-12 text-center">
+          <p className="text-muted-foreground mb-4">No exam venues found</p>
+          <Button onClick={() => setIsDialogOpen(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Add Your First Venue
+          </Button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {venues.map((venue: any) => (
+            <VenueCard 
+              key={venue.id} 
+              venue={venue} 
+              onDelete={handleDelete}
+              isDeleting={deleteMutation.isPending}
+            />
+          ))}
+        </div>
+      )}
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent data-testid="dialog-add-venue">
@@ -143,10 +178,12 @@ export default function VenuesPage() {
               </div>
             </div>
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
+              <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)} disabled={addMutation.isPending}>
                 Cancel
               </Button>
-              <Button type="submit" data-testid="button-submit-venue">Create Venue</Button>
+              <Button type="submit" disabled={addMutation.isPending} data-testid="button-submit-venue">
+                {addMutation.isPending ? "Creating..." : "Create Venue"}
+              </Button>
             </DialogFooter>
           </form>
         </DialogContent>

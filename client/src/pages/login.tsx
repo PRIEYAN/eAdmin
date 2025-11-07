@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Building2 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { useToast } from "@/hooks/use-toast";
+import { api } from "@/lib/api";
 
 export default function LoginPage() {
   const [adminId, setAdminId] = useState("");
@@ -20,24 +21,32 @@ export default function LoginPage() {
     e.preventDefault();
     setIsLoading(true);
 
-    //todo: remove mock functionality
-    setTimeout(() => {
-      const mockAdmin = {
-        id: '1',
-        adminId: adminId,
-        name: 'Admin User',
-      };
-      const mockToken = 'mock-jwt-token-12345';
+    try {
+      const response = await api.auth.login(adminId, password);
       
-      login(mockAdmin, mockToken);
-      setIsLoading(false);
+      const adminData = {
+        id: response.admin.id || response.admin._id,
+        adminId: response.admin.adminId,
+        name: response.admin.name,
+      };
+      
+      login(adminData, response.token);
       setLocation('/');
       
       toast({
         title: "Login Successful",
-        description: `Welcome back, ${mockAdmin.name}!`,
+        description: `Welcome back, ${adminData.name}!`,
       });
-    }, 1000);
+    } catch (error: any) {
+      console.error('Login error:', error);
+      toast({
+        title: "Login Failed",
+        description: error.response?.data?.message || "Invalid credentials. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
