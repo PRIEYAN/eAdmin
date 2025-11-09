@@ -144,7 +144,7 @@ export default function BookedVenuesPage() {
                           <TableCell>{venue.Examtime || ""}</TableCell>
                           <TableCell>{b.name || ""}</TableCell>
                           <TableCell>{b.email || ""}</TableCell>
-                          <TableCell>{b.phoneNumber || ""}</TableCell>
+                          <TableCell>{b.PhoneNumber || ""}</TableCell>
                           <TableCell>
                             {b.bookedAt
                               ? new Date(b.bookedAt).toLocaleString()
