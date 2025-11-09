@@ -1,0 +1,22 @@
+Root Directory
+
+.
+
+
+(project root — not client)
+
+Install Command
+
+npm install
+
+
+Build Command
+
+npm run build
+
+
+Do NOT add --workspaces.
+
+Output Directory
+
+dist/public
