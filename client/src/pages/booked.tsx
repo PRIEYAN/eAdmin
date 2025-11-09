@@ -49,7 +49,7 @@ export default function BookedVenuesPage() {
           Time: venue.Examtime || "",
           Name: b.name || "",
           Email: b.email || "",
-          Phone: b.phoneNumber || "",
+          Phone: b.PhoneNumber || "",
           BookedOn: b.bookedAt
             ? new Date(b.bookedAt).toLocaleString()
             : "",
@@ -100,7 +100,7 @@ export default function BookedVenuesPage() {
                   <TableHead>Time</TableHead>
                   <TableHead>Teacher Name</TableHead>
                   <TableHead>Email</TableHead>
-                  <TableHead>Phone</TableHead>
+                
                   <TableHead>Booked On</TableHead>
                 </TableRow>
               </TableHeader>
@@ -144,7 +144,6 @@ export default function BookedVenuesPage() {
                           <TableCell>{venue.Examtime || ""}</TableCell>
                           <TableCell>{b.name || ""}</TableCell>
                           <TableCell>{b.email || ""}</TableCell>
-                          <TableCell>{b.PhoneNumber || ""}</TableCell>
                           <TableCell>
                             {b.bookedAt
                               ? new Date(b.bookedAt).toLocaleString()
