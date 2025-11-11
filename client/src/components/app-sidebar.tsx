@@ -49,19 +49,19 @@ export function AppSidebar() {
 
   return (
     <Sidebar data-testid="sidebar-main" className="supports-[backdrop-filter]:backdrop-blur">
-      <SidebarHeader className="p-4 bg-transparent border-b">
+      <SidebarHeader className="p-3 bg-transparent border-b border-sidebar-border/50">
         <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-blue-500 shadow-sm ring-1 ring-primary/30">
-            <Building2 className="h-5 w-5 text-primary-foreground" />
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-chart-2 shadow-lg ring-2 ring-primary/30">
+            <Building2 className="h-4 w-4 text-primary-foreground opacity-100" />
           </div>
           <div>
-            <h2 className="text-lg font-semibold tracking-tight">E-Venue Admin</h2>
+            <h2 className="text-base font-black tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/80">E-Venue Admin</h2>
           </div>
         </div>
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Navigation</SidebarGroupLabel>
+          <SidebarGroupLabel className="px-2.5 py-1 text-xs font-semibold">Navigation</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {menuItems.map((item) => (
@@ -69,11 +69,11 @@ export function AppSidebar() {
                   <SidebarMenuButton
                     onClick={() => setLocation(item.url)}
                     isActive={location === item.url}
-                    className="transition-colors data-[active=true]:bg-primary/20 data-[active=true]:text-primary hover:bg-sidebar-accent/80"
+                    className="transition-all duration-200 data-[active=true]:bg-primary/20 data-[active=true]:text-primary data-[active=true]:shadow-sm data-[active=true]:ring-1 data-[active=true]:ring-primary/30 hover:bg-sidebar-accent/60 hover:translate-x-1 px-2.5 py-1.5"
                     data-testid={`link-${item.title.toLowerCase().replace(/\s+/g, '-')}`}
                   >
-                    <item.icon className="h-4 w-4" />
-                    <span>{item.title}</span>
+                    <item.icon className="h-3.5 w-3.5 opacity-90" />
+                    <span className="text-sm font-medium">{item.title}</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
@@ -81,10 +81,10 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter className="p-4 border-t">
+      <SidebarFooter className="p-3 border-t border-sidebar-border/50">
         <Button
           variant="outline"
-          className="w-full justify-start"
+          className="w-full justify-start border-border/50 hover:bg-destructive/10 hover:text-destructive hover:border-destructive/30 transition-all"
           onClick={() => {
             logout();
             setLocation('/login');

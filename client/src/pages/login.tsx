@@ -49,25 +49,25 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-4 relative overflow-hidden">
-      <div className="pointer-events-none absolute -inset-20 opacity-40">
-        <div className="absolute -top-24 -right-16 h-80 w-80 rounded-full bg-primary/20 blur-3xl" />
-        <div className="absolute -bottom-24 -left-16 h-80 w-80 rounded-full bg-chart-3/20 blur-3xl" />
+      <div className="pointer-events-none absolute -inset-20 opacity-50">
+        <div className="absolute -top-24 -right-16 h-80 w-80 rounded-full bg-primary/15 blur-3xl" />
+        <div className="absolute -bottom-24 -left-16 h-80 w-80 rounded-full bg-chart-2/10 blur-3xl" />
       </div>
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-4 text-center">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-lg bg-primary">
-            <Building2 className="h-7 w-7 text-primary-foreground" />
+      <Card className="w-full max-w-md border-border/50 bg-card/80 backdrop-blur-xl shadow-2xl rounded-xl">
+        <CardHeader className="space-y-4 text-center p-8">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-chart-2 shadow-lg ring-1 ring-primary/30">
+            <Building2 className="h-7 w-7 text-primary-foreground opacity-100" />
           </div>
           <div>
-            <CardTitle className="text-2xl font-bold">E-Venue Admin</CardTitle>
-            <CardDescription>Sign in to manage exam venues and teachers</CardDescription>
+            <CardTitle className="text-2xl font-black bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/80 tracking-tight">E-Venue Admin</CardTitle>
+            <CardDescription className="text-sm font-light">Sign in to manage exam venues and teachers</CardDescription>
           </div>
           <div className="flex flex-wrap justify-center gap-2 pt-1">
-            <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-xs ring-1 ring-primary/20">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/15 text-primary text-xs font-semibold ring-1 ring-primary/30 border border-primary/20 backdrop-blur-sm tracking-tight">
               <Building2 className="w-3.5 h-3.5" />
               Admin
             </span>
-            <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-500/10 text-slate-600 dark:text-slate-300 text-xs ring-1 ring-slate-300/30">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-500/15 text-slate-300 text-xs font-semibold ring-1 ring-slate-500/30 border border-slate-500/20 backdrop-blur-sm tracking-tight">
               <Lock className="w-3.5 h-3.5" />
               Secure
             </span>

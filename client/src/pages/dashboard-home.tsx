@@ -26,97 +26,76 @@ export default function DashboardHome() {
   const totalVerifiedTeachers = verifiedTeachers?.teachers?.length || 0;
   const totalPendingTeachers = pendingTeachers?.teachers?.length || 0;
   const totalVenues = venues?.venues?.length || 0;
-  
-  const nextExamDate = venues?.venues?.[0]?.Examdate 
-    ? new Date(venues.venues[0].Examdate).toLocaleDateString('en-US', { 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric' 
+
+  const nextExamDate = venues?.venues?.[0]?.Examdate
+    ? new Date(venues.venues[0].Examdate).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
       })
     : "No exams scheduled";
 
   return (
-    <div className="space-y-10 relative">
-
-      {/* Floating gradient header card */}
-      <div className="relative overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-white/60 via-white/40 to-white/20 backdrop-blur-xl shadow-xl p-8">
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-0 right-0 w-72 h-72 bg-primary/20 blur-[120px] opacity-60" />
-          <div className="absolute bottom-0 left-0 w-72 h-72 bg-sky-300/20 blur-[120px] opacity-50" />
+    <div className="space-y-6 pb-6">
+      {/* Enhanced Header - Dark Theme */}
+      <div className="relative rounded-xl overflow-hidden border border-border/50 bg-card/70 backdrop-blur-xl p-6">
+        <div className="absolute inset-0 pointer-events-none opacity-60">
+          <div className="absolute top-[-60px] right-[-60px] w-96 h-96 bg-primary/15 blur-[130px]" />
+          <div className="absolute bottom-[-60px] left-[-60px] w-96 h-96 bg-chart-2/10 blur-[130px]" />
         </div>
 
         <div className="relative z-10">
-          <h1 
-            className="text-[2.6rem] md:text-[3rem] font-extrabold tracking-tight leading-tight bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-700"
-            data-testid="text-page-title"
-          >
+          <h1 className="text-3xl md:text-4xl font-black tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-foreground via-primary/90 to-foreground">
             Dashboard
           </h1>
-          <p className="text-lg text-muted-foreground">
-            Overview of E-Venue exam booking system
+          <p className="text-xs text-muted-foreground mt-1 font-light">
+            Overview of E-Venue exam booking operations
           </p>
-          {/* Icon strip */}
-          <div className="mt-6 flex flex-wrap gap-3">
-            <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-xs ring-1 ring-primary/20">
-              <UserCheck className="w-3.5 h-3.5" />
-              Verified
-            </span>
-            <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-chart-3/10 text-emerald-600 dark:text-emerald-400 text-xs ring-1 ring-emerald-300/30">
-              <Users className="w-3.5 h-3.5" />
-              Pending
-            </span>
-            <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 text-xs ring-1 ring-blue-300/30">
-              <Building2 className="w-3.5 h-3.5" />
-              Venues
-            </span>
-            <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-400 text-xs ring-1 ring-purple-300/30">
-              <CalendarDays className="w-3.5 h-3.5" />
-              Schedule
-            </span>
+
+          <div className="mt-4 flex flex-wrap gap-2">
+            <DashboardTag icon={UserCheck} label="Verified" color="primary" />
+            <DashboardTag icon={Users} label="Pending" color="emerald" />
+            <DashboardTag icon={Building2} label="Venues" color="blue" />
+            <DashboardTag icon={CalendarDays} label="Schedule" color="purple" />
           </div>
         </div>
       </div>
 
-      {/* Loading skeletons */}
+      {/* Stats Grid */}
       {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 animate-pulse">
           {[1, 2, 3, 4].map((i) => (
-            <Skeleton 
-              key={i} 
-              className="h-36 rounded-2xl shadow-lg bg-muted/50" 
-            />
+            <Skeleton key={i} className="h-36 rounded-xl bg-muted/50" />
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-
-          {/* STAT CARDS (visual upgrade happens inside StatsCard automatically if styled) */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
           <StatsCard
             title="Verified Teachers"
             value={totalVerifiedTeachers}
             icon={UserCheck}
             description="Active and verified"
-            className="shadow-lg hover:shadow-xl transition-all duration-500 hover:scale-[1.02] hover:-translate-y-0.5"
+            className="hover:shadow-xl hover:scale-[1.02] transition-all"
           />
           <StatsCard
             title="Pending Teachers"
             value={totalPendingTeachers}
             icon={Users}
             description="Awaiting verification"
-            className="shadow-lg hover:shadow-xl transition-all duration-500 hover:scale-[1.02] hover:-translate-y-0.5"
+            className="hover:shadow-xl hover:scale-[1.02] transition-all"
           />
           <StatsCard
             title="Total Venues"
             value={totalVenues}
             icon={Building2}
             description="Available exam venues"
-            className="shadow-lg hover:shadow-xl transition-all duration-500 hover:scale-[1.02] hover:-translate-y-0.5"
+            className="hover:shadow-xl hover:scale-[1.02] transition-all"
           />
           <StatsCard
             title="Next Exam"
             value={nextExamDate}
             icon={CalendarDays}
-            className="shadow-lg hover:shadow-xl transition-all duration-500 hover:scale-[1.02] hover:-translate-y-0.5"
+            className="hover:shadow-xl hover:scale-[1.02] transition-all"
           />
         </div>
       )}
@@ -127,6 +106,25 @@ export default function DashboardHome() {
   );
 }
 
+function DashboardTag({ icon: Icon, label, color }: any) {
+  const colorMap: Record<string, string> = {
+    primary: "bg-primary/15 text-primary ring-primary/30 border-primary/20",
+    emerald: "bg-emerald-500/15 text-emerald-400 ring-emerald-500/30 border-emerald-500/20",
+    blue: "bg-blue-500/15 text-blue-400 ring-blue-500/30 border-blue-500/20",
+    purple: "bg-purple-500/15 text-purple-400 ring-purple-500/30 border-purple-500/20",
+  };
+
+  return (
+    <span
+      className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-full ring-1 border ${colorMap[color]} backdrop-blur-sm tracking-tight`}
+    >
+      <Icon className="w-3.5 h-3.5" />
+      {label}
+    </span>
+  );
+}
+
+/** ---- RecentActivity (same logic, UI tidy) ---- */
 function RecentActivity() {
   const { data, isLoading } = useQuery({
     queryKey: ['/api/admin/venue/getVenueDetails'],
@@ -155,11 +153,11 @@ function RecentActivity() {
       .slice(0, 8);
 
   return (
-    <Card className="shadow-sm">
-      <CardHeader className="pb-2">
-        <CardTitle className="tracking-tight">Recent Activity</CardTitle>
+    <Card>
+      <CardHeader className="pb-3">
+        <CardTitle className="tracking-tight text-lg">Recent Activity</CardTitle>
       </CardHeader>
-      <CardContent className="pt-2">
+      <CardContent className="pt-0">
         {isLoading ? (
           <div className="space-y-4">
             {[1, 2, 3].map((i) => (

@@ -67,26 +67,26 @@ export default function BookedVenuesPage() {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-5 pb-6">
       {/* Header Section */}
-      <div className="flex items-center justify-between rounded-2xl border bg-card/80 supports-[backdrop-filter]:backdrop-blur p-4 md:p-6 shadow-sm">
+      <div className="flex items-center justify-between rounded-xl border border-border/50 bg-card/70 backdrop-blur-xl p-5 shadow-xl">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Booked Venues</h1>
-          <p className="text-muted-foreground mt-2">
+          <h1 className="text-2xl md:text-3xl font-black tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/80">Booked Venues</h1>
+          <p className="text-xs text-muted-foreground mt-1 font-light">
             {isLoading
               ? "Loading..."
               : `${venues.length} venues found`}
           </p>
-          <div className="mt-3 flex flex-wrap gap-2">
-            <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-400 text-xs ring-1 ring-purple-300/30">
+          <div className="mt-4 flex flex-wrap gap-2">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-purple-500/15 text-purple-400 text-xs font-semibold ring-1 ring-purple-500/30 border border-purple-500/20 backdrop-blur-sm tracking-tight">
               <CalendarDays className="w-3.5 h-3.5" />
               Calendar
             </span>
-            <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-xs ring-1 ring-primary/20">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/15 text-primary text-xs font-semibold ring-1 ring-primary/30 border border-primary/20 backdrop-blur-sm tracking-tight">
               <FileSpreadsheet className="w-3.5 h-3.5" />
               Export
             </span>
-            <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 text-xs ring-1 ring-blue-300/30">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-500/15 text-blue-400 text-xs font-semibold ring-1 ring-blue-500/30 border border-blue-500/20 backdrop-blur-sm tracking-tight">
               <Building2 className="w-3.5 h-3.5" />
               Venues
             </span>
@@ -102,11 +102,11 @@ export default function BookedVenuesPage() {
       </div>
 
       {/* Table Section */}
-      <Card className="shadow-sm">
-        <CardHeader className="pb-2">
-          <CardTitle className="tracking-tight">All Booked Venues</CardTitle>
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="tracking-tight text-lg">All Booked Venues</CardTitle>
         </CardHeader>
-        <CardContent className="pt-2">
+        <CardContent className="pt-0">
           <div className="overflow-x-auto nice-scrollbar">
             <Table>
               <TableHeader>

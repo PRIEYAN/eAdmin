@@ -37,21 +37,21 @@ function DashboardLayout({ children }: { children: React.ReactNode }) {
       <div className="flex h-screen w-full">
         <AppSidebar />
         <div className="flex flex-col flex-1">
-          <header className="flex items-center justify-between p-4 border-b sticky top-0 z-20 bg-background/70 supports-[backdrop-filter]:backdrop-blur">
+          <header className="flex items-center justify-between p-4 border-b border-border/50 sticky top-0 z-20 bg-background/80 backdrop-blur-xl shadow-sm">
             <SidebarTrigger data-testid="button-sidebar-toggle" />
             <div className="flex items-center gap-4">
               <span className="text-sm text-muted-foreground">
                 Welcome, <span className="font-medium text-foreground">{admin?.name}</span>
               </span>
-              <Avatar className="h-8 w-8 ring-1 ring-border shadow-sm">
-                <AvatarFallback className="bg-primary/15 text-primary text-xs font-semibold">
+              <Avatar className="h-8 w-8 ring-2 ring-primary/20 shadow-lg">
+                <AvatarFallback className="bg-gradient-to-br from-primary/20 to-chart-2/20 text-primary text-xs font-semibold border border-primary/30">
                   {admin?.name?.slice(0,2)?.toUpperCase() || "AD"}
                 </AvatarFallback>
               </Avatar>
             </div>
           </header>
           <main className="flex-1 overflow-auto nice-scrollbar">
-            <div className="max-w-7xl mx-auto p-4 md:p-6 lg:p-8">
+            <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 pt-3 md:pt-4 pb-6 md:pb-8">
               {children}
             </div>
           </main>
