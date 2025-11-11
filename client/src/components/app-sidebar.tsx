@@ -49,13 +49,13 @@ export function AppSidebar() {
 
   return (
     <Sidebar data-testid="sidebar-main">
-      <SidebarHeader className="p-4">
+      <SidebarHeader className="p-4 bg-sidebar/60 supports-[backdrop-filter]:backdrop-blur border-b">
         <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary shadow-sm ring-1 ring-primary/30">
             <Building2 className="h-5 w-5 text-primary-foreground" />
           </div>
           <div>
-            <h2 className="text-lg font-semibold">E-Venue Admin</h2>
+            <h2 className="text-lg font-semibold tracking-tight">E-Venue Admin</h2>
           </div>
         </div>
       </SidebarHeader>
@@ -69,6 +69,7 @@ export function AppSidebar() {
                   <SidebarMenuButton
                     onClick={() => setLocation(item.url)}
                     isActive={location === item.url}
+                    className="transition-colors data-[active=true]:bg-primary/15 data-[active=true]:text-primary hover:bg-sidebar-accent/60"
                     data-testid={`link-${item.title.toLowerCase().replace(/\s+/g, '-')}`}
                   >
                     <item.icon className="h-4 w-4" />
@@ -80,7 +81,7 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter className="p-4">
+      <SidebarFooter className="p-4 border-t">
         <Button
           variant="outline"
           className="w-full justify-start"

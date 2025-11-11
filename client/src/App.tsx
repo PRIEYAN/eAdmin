@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { AuthProvider, useAuth } from "@/lib/auth-context";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import LoginPage from "@/pages/login";
 import DashboardHome from "@/pages/dashboard-home";
 import VerifiedTeachersPage from "@/pages/verified-teachers";
@@ -36,15 +37,20 @@ function DashboardLayout({ children }: { children: React.ReactNode }) {
       <div className="flex h-screen w-full">
         <AppSidebar />
         <div className="flex flex-col flex-1">
-          <header className="flex items-center justify-between p-4 border-b">
+          <header className="flex items-center justify-between p-4 border-b sticky top-0 z-20 bg-background/70 supports-[backdrop-filter]:backdrop-blur">
             <SidebarTrigger data-testid="button-sidebar-toggle" />
             <div className="flex items-center gap-4">
               <span className="text-sm text-muted-foreground">
                 Welcome, <span className="font-medium text-foreground">{admin?.name}</span>
               </span>
+              <Avatar className="h-8 w-8 ring-1 ring-border shadow-sm">
+                <AvatarFallback className="bg-primary/15 text-primary text-xs font-semibold">
+                  {admin?.name?.slice(0,2)?.toUpperCase() || "AD"}
+                </AvatarFallback>
+              </Avatar>
             </div>
           </header>
-          <main className="flex-1 overflow-auto">
+          <main className="flex-1 overflow-auto nice-scrollbar">
             <div className="max-w-7xl mx-auto p-4 md:p-6 lg:p-8">
               {children}
             </div>

@@ -78,10 +78,10 @@ export default function VerifiedTeachersPage() {
   );
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between flex-wrap gap-4">
+    <div className="space-y-8">
+      <div className="flex items-center justify-between flex-wrap gap-4 rounded-2xl border bg-card/80 supports-[backdrop-filter]:backdrop-blur p-4 md:p-6 shadow-sm">
         <div>
-          <h1 className="text-3xl font-bold" data-testid="text-page-title">Verified Teachers</h1>
+          <h1 className="text-3xl font-bold tracking-tight" data-testid="text-page-title">Verified Teachers</h1>
           <p className="text-muted-foreground mt-2">
             {isLoading ? "Loading..." : `${filteredTeachers.length} verified teachers`}
           </p>
@@ -89,7 +89,7 @@ export default function VerifiedTeachersPage() {
 
         <AlertDialog>
           <AlertDialogTrigger asChild>
-            <Button variant="destructive" data-testid="button-reset-all">
+            <Button variant="destructive" className="shadow-sm hover:shadow transition-all" data-testid="button-reset-all">
               <RotateCcw className="w-4 h-4 mr-2" />
               Reset All Bookings
             </Button>
@@ -116,25 +116,25 @@ export default function VerifiedTeachersPage() {
 
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Teacher List</CardTitle>
+      <Card className="shadow-sm">
+        <CardHeader className="pb-2">
+          <CardTitle className="tracking-tight">Teacher List</CardTitle>
           <div className="relative mt-4">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
               placeholder="Search by name, ID, or email..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
+              className="pl-10 h-10"
               data-testid="input-search"
             />
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-2">
           {isLoading ? (
             <p className="text-center text-muted-foreground py-8">Loading teachers...</p>
           ) : (
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto nice-scrollbar">
               <Table>
                 <TableHeader>
                   <TableRow>

@@ -66,11 +66,11 @@ export default function BookedVenuesPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Header Section */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between rounded-2xl border bg-card/80 supports-[backdrop-filter]:backdrop-blur p-4 md:p-6 shadow-sm">
         <div>
-          <h1 className="text-3xl font-bold">Booked Venues</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Booked Venues</h1>
           <p className="text-muted-foreground mt-2">
             {isLoading
               ? "Loading..."
@@ -80,18 +80,19 @@ export default function BookedVenuesPage() {
         <Button
           onClick={handleDownloadExcel}
           disabled={isLoading || venues.length === 0}
+          className="shadow-sm hover:shadow transition-all"
         >
           Download Excel
         </Button>
       </div>
 
       {/* Table Section */}
-      <Card>
-        <CardHeader>
-          <CardTitle>All Booked Venues</CardTitle>
+      <Card className="shadow-sm">
+        <CardHeader className="pb-2">
+          <CardTitle className="tracking-tight">All Booked Venues</CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
+        <CardContent className="pt-2">
+          <div className="overflow-x-auto nice-scrollbar">
             <Table>
               <TableHeader>
                 <TableRow>

@@ -25,7 +25,7 @@ export function TeachersTable({
   isVerifying = false 
 }: TeachersTableProps) {
   return (
-    <div className="rounded-lg border" data-testid="table-teachers">
+    <div className="rounded-xl border shadow-sm bg-card supports-[backdrop-filter]:bg-card/80 supports-[backdrop-filter]:backdrop-blur" data-testid="table-teachers">
       <Table>
         <TableHeader>
           <TableRow>

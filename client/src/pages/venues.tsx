@@ -159,9 +159,9 @@ export default function VenuesPage() {
   };
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold" data-testid="text-page-title">Venues</h1>
+    <div className="space-y-8">
+      <div className="rounded-2xl border bg-card/80 supports-[backdrop-filter]:backdrop-blur p-4 md:p-6 shadow-sm">
+        <h1 className="text-3xl font-bold tracking-tight" data-testid="text-page-title">Venues</h1>
         <p className="text-muted-foreground mt-2">
           {isLoading ? "Loading..." : `${filteredVenues.length} venues available`}
         </p>
@@ -169,26 +169,26 @@ export default function VenuesPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
-          <Button onClick={handleDeleteAllVenues} variant="destructive" className="mb-4">Delete All Venues</Button>
-          <Card>
-            <CardHeader>
-              <CardTitle>Venue List</CardTitle>
+          <Button onClick={handleDeleteAllVenues} variant="destructive" className="mb-4 shadow-sm hover:shadow transition-all">Delete All Venues</Button>
+          <Card className="shadow-sm">
+            <CardHeader className="pb-2">
+              <CardTitle className="tracking-tight">Venue List</CardTitle>
               <div className="relative mt-4">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
                   placeholder="Search venues..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
+                  className="pl-10 h-10"
                   data-testid="input-search"
                 />
               </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pt-2">
               {isLoading ? (
                 <p className="text-center text-muted-foreground py-8">Loading venues...</p>
               ) : (
-                <div className="overflow-x-auto">
+                <div className="overflow-x-auto nice-scrollbar">
                   <Table>
                     <TableHeader>
                       <TableRow>
@@ -257,9 +257,9 @@ export default function VenuesPage() {
         </div>
 
         <div>
-          <Card>
-            <CardHeader>
-              <CardTitle>Add New Venue</CardTitle>
+          <Card className="shadow-sm">
+            <CardHeader className="pb-2">
+              <CardTitle className="tracking-tight">Add New Venue</CardTitle>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleAddVenue} className="space-y-4">
@@ -301,7 +301,7 @@ export default function VenuesPage() {
                 </div>
                 <Button 
                   type="submit" 
-                  className="w-full" 
+                  className="w-full shadow-sm hover:shadow transition-all" 
                   disabled={isAdding}
                   data-testid="button-add-venue"
                 >

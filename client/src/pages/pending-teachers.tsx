@@ -69,41 +69,41 @@ export default function PendingTeachersPage() {
   
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between flex-wrap gap-4">
+    <div className="space-y-8">
+      <div className="flex items-center justify-between flex-wrap gap-4 rounded-2xl border bg-card/80 supports-[backdrop-filter]:backdrop-blur p-4 md:p-6 shadow-sm">
         <div>
-          <h1 className="text-3xl font-bold" data-testid="text-page-title">Pending Teachers</h1>
+          <h1 className="text-3xl font-bold tracking-tight" data-testid="text-page-title">Pending Teachers</h1>
           <p className="text-muted-foreground mt-2">
             {isLoading ? "Loading..." : `${filteredTeachers.length} pending verification`}
           </p>
         </div>
         
-       <Button onClick={fetchTeachers} variant="destructive" data-testid="button-reset-all">
+       <Button onClick={fetchTeachers} variant="destructive" className="shadow-sm hover:shadow transition-all" data-testid="button-reset-all">
               <RotateCcw className="w-4 h-4 mr-2" />
               Refresh
             </Button>
 
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Pending Verification</CardTitle>
+      <Card className="shadow-sm">
+        <CardHeader className="pb-2">
+          <CardTitle className="tracking-tight">Pending Verification</CardTitle>
           <div className="relative mt-4">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
               placeholder="Search by name, ID, or email..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
+              className="pl-10 h-10"
               data-testid="input-search"
             />
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-2">
           {isLoading ? (
             <p className="text-center text-muted-foreground py-8">Loading teachers...</p>
           ) : (
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto nice-scrollbar">
               <Table>
                 <TableHeader>
                   <TableRow>
