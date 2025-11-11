@@ -214,6 +214,10 @@
 }
 
 @layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
   * {
     @apply border-border;
   }
@@ -258,6 +262,12 @@
  * need to be distinguished from eachother visually.
  */
 @layer utilities {
+  /* Prevent iOS auto-zoom on form fields by ensuring >=16px font-size on small screens */
+  @media (max-width: 640px) {
+    input, select, textarea {
+      font-size: 16px;
+    }
+  }
   /* Modern, subtle scrollbar */
   .nice-scrollbar {
     scrollbar-width: thin;

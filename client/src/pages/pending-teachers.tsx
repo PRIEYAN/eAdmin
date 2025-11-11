@@ -129,7 +129,6 @@ export default function PendingTeachersPage() {
                     <TableHead className="text-sm font-medium uppercase">Name</TableHead>
                     <TableHead className="text-sm font-medium uppercase">Email</TableHead>
                     <TableHead className="text-sm font-medium uppercase">Phone</TableHead>
-                    <TableHead className="text-sm font-medium uppercase text-right">Venues Booked</TableHead>
                     <TableHead className="text-sm font-medium uppercase text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -147,7 +146,6 @@ export default function PendingTeachersPage() {
                         <TableCell className="font-medium">{teacher.name}</TableCell>
                         <TableCell className="text-muted-foreground">{teacher.email}</TableCell>
                         <TableCell className="text-muted-foreground">{teacher.PhoneNumber}</TableCell>
-                        <TableCell className="text-right tabular-nums">{teacher.numberofvenuesbooked}</TableCell>
                         <TableCell className="text-right">
                           <Button
                             size="sm"
