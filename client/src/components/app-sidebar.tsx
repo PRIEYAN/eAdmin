@@ -55,7 +55,7 @@ export function AppSidebar() {
             <Building2 className="h-4 w-4 text-primary-foreground opacity-100" />
           </div>
           <div>
-            <h2 className="text-base font-black tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/80">E-Venue Admin</h2>
+            <h2 className="text-base font-black tracking-tight text-sidebar-foreground">E-Venue Admin</h2>
           </div>
         </div>
       </SidebarHeader>

@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from "react";
 import { Switch, Route, Redirect } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -7,6 +8,8 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { AuthProvider, useAuth } from "@/lib/auth-context";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Moon, Sun } from "lucide-react";
 import LoginPage from "@/pages/login";
 import DashboardHome from "@/pages/dashboard-home";
 import VerifiedTeachersPage from "@/pages/verified-teachers";
@@ -26,20 +29,40 @@ function ProtectedRoute({ component: Component }: { component: () => JSX.Element
 
 function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { admin } = useAuth();
+  const [theme, setTheme] = useState<"light" | "dark">(() => {
+    if (typeof window === "undefined") return "dark";
+    return (localStorage.getItem("theme") as "light" | "dark") || "light";
+  });
+  
+  useEffect(() => {
+    const root = document.documentElement;
+    root.classList.remove("light", "dark");
+    root.classList.add(theme);
+    localStorage.setItem("theme", theme);
+  }, [theme]);
   
   const style = {
     "--sidebar-width": "16rem",
     "--sidebar-width-icon": "3rem",
-  };
+  } as React.CSSProperties;
 
   return (
-    <SidebarProvider style={style as React.CSSProperties}>
+    <SidebarProvider style={style}>
       <div className="flex h-screen w-full">
         <AppSidebar />
         <div className="flex flex-col flex-1">
           <header className="flex items-center justify-between p-4 border-b border-border/50 sticky top-0 z-20 bg-background/80 backdrop-blur-xl shadow-sm">
             <SidebarTrigger data-testid="button-sidebar-toggle" />
             <div className="flex items-center gap-4">
+              <Button
+                variant="outline"
+                size="icon"
+                aria-label="Toggle theme"
+                className="h-8 w-8"
+                onClick={() => setTheme((t) => (t === "dark" ? "light" : "dark"))}
+              >
+                {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+              </Button>
               <span className="text-sm text-muted-foreground">
                 Welcome, <span className="font-medium text-foreground">{admin?.name}</span>
               </span>
