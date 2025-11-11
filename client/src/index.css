@@ -140,9 +140,9 @@
   --background: 180 33% 98%;
   --foreground: 200 15% 15%;
   --border: 0 0% 88%;
-  --card: 180 45% 98%;
+  --card: 0 0% 100%;
   --card-foreground: 200 15% 15%;
-  --card-border: 190 30% 88%;
+  --card-border: 0 0% 88%;
   --sidebar: 182 72% 94%;
   --sidebar-foreground: 195 25% 18%;
   --sidebar-border: 186 35% 85%;
@@ -256,6 +256,17 @@
   
   [data-sidebar="menu-button"][data-active="true"] svg {
     opacity: 1;
+  }
+  
+  /* Light theme cards - pure white, no gradients, lighter shadows */
+  .light .shadcn-card {
+    background: hsl(var(--card)) !important;
+    backdrop-filter: none !important;
+    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05), 0 2px 4px 0 rgb(0 0 0 / 0.05) !important;
+  }
+  
+  .light .shadcn-card:hover {
+    box-shadow: 0 2px 4px 0 rgb(0 0 0 / 0.1), 0 4px 8px 0 rgb(0 0 0 / 0.1) !important;
   }
   /* Prevent iOS auto-zoom on form fields by ensuring >=16px font-size on small screens */
   @media (max-width: 640px) {
