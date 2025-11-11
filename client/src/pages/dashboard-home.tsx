@@ -3,6 +3,7 @@ import { Users, UserCheck, Building2, CalendarDays } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function DashboardHome() {
   const { data: verifiedTeachers, isLoading: loadingVerified } = useQuery({
@@ -120,6 +121,85 @@ export default function DashboardHome() {
         </div>
       )}
 
+      {/* Recent Activity */}
+      <RecentActivity />
     </div>
   );
+}
+
+function RecentActivity() {
+  const { data, isLoading } = useQuery({
+    queryKey: ['/api/admin/venue/getVenueDetails'],
+    queryFn: () => api.venues.getAllDetails(),
+  });
+
+  const venues: any[] = data?.venues || [];
+
+  const activities =
+    venues
+      .flatMap((v) =>
+        (v.Book?.bookedBy ?? v.bookedBy ?? []).map((b: any) => ({
+          title: b.name || b.email || "Unknown",
+          description:
+            v.Examdate && v.Examtime
+              ? `Booked ${v.Examdate} ${v.Examtime}`
+              : `Booked venue ${v.ExamVenueId ?? ""}`,
+          time: b.bookedAt ?? null,
+        }))
+      )
+      .sort((a, b) => {
+        const at = a.time ? new Date(a.time).getTime() : 0;
+        const bt = b.time ? new Date(b.time).getTime() : 0;
+        return bt - at;
+      })
+      .slice(0, 8);
+
+  return (
+    <Card className="shadow-sm">
+      <CardHeader className="pb-2">
+        <CardTitle className="tracking-tight">Recent Activity</CardTitle>
+      </CardHeader>
+      <CardContent className="pt-2">
+        {isLoading ? (
+          <div className="space-y-4">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="h-10 rounded-md bg-muted/50" />
+            ))}
+          </div>
+        ) : activities.length === 0 ? (
+          <p className="text-sm text-muted-foreground">No recent bookings</p>
+        ) : (
+          <ul className="divide-y">
+            {activities.map((act, idx) => (
+              <li key={idx} className="flex items-start justify-between py-4">
+                <div className="min-w-0">
+                  <p className="font-medium truncate">{act.title}</p>
+                  <p className="text-sm text-muted-foreground truncate">
+                    {act.description}
+                  </p>
+                </div>
+                <span className="ml-4 shrink-0 text-xs text-muted-foreground">
+                  {formatRelativeTime(act.time)}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function formatRelativeTime(dateLike: string | number | Date | null) {
+  if (!dateLike) return "";
+  const now = Date.now();
+  const ts = new Date(dateLike).getTime();
+  const diff = Math.max(0, now - ts);
+  const minutes = Math.floor(diff / (1000 * 60));
+  if (minutes < 1) return "just now";
+  if (minutes < 60) return `${minutes} minute${minutes === 1 ? "" : "s"} ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours} hour${hours === 1 ? "" : "s"} ago`;
+  const days = Math.floor(hours / 24);
+  return `${days} day${days === 1 ? "" : "s"} ago`;
 }

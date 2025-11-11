@@ -14,67 +14,67 @@
   --elevate-1: rgba(0,0,0, .03);
   --elevate-2: rgba(0,0,0, .08);
 
-  --background: 0 0% 98%;
+  --background: 180 33% 98%;
 
   --foreground: 0 0% 12%;
 
   --border: 0 0% 88%;
 
-  --card: 0 0% 96%;
+  --card: 180 45% 98%;
 
-  --card-foreground: 0 0% 12%;
+  --card-foreground: 200 15% 15%;
 
-  --card-border: 0 0% 90%;
+  --card-border: 190 30% 88%;
 
-  --sidebar: 0 0% 94%;
+  --sidebar: 182 72% 94%;
 
-  --sidebar-foreground: 0 0% 12%;
+  --sidebar-foreground: 195 25% 18%;
 
-  --sidebar-border: 0 0% 88%;
+  --sidebar-border: 186 35% 85%;
 
-  --sidebar-primary: 217 91% 48%;
+  --sidebar-primary: 188 88% 42%;
 
   --sidebar-primary-foreground: 0 0% 98%;
 
-  --sidebar-accent: 217 12% 88%;
+  --sidebar-accent: 182 68% 90%;
 
-  --sidebar-accent-foreground: 217 18% 20%;
+  --sidebar-accent-foreground: 190 25% 22%;
 
-  --sidebar-ring: 217 91% 48%;
+  --sidebar-ring: 188 88% 45%;
 
-  --popover: 0 0% 92%;
+  --popover: 186 40% 96%;
 
   --popover-foreground: 0 0% 12%;
 
   --popover-border: 0 0% 86%;
 
-  --primary: 217 91% 48%;
+  --primary: 188 88% 42%;
 
   --primary-foreground: 0 0% 98%;
 
-  --secondary: 217 8% 86%;
+  --secondary: 186 18% 88%;
 
-  --secondary-foreground: 217 12% 18%;
+  --secondary-foreground: 195 18% 20%;
 
-  --muted: 217 10% 90%;
+  --muted: 186 18% 92%;
 
-  --muted-foreground: 217 8% 35%;
+  --muted-foreground: 200 10% 35%;
 
-  --accent: 217 15% 88%;
+  --accent: 182 28% 88%;
 
-  --accent-foreground: 217 18% 20%;
+  --accent-foreground: 195 18% 22%;
 
   --destructive: 0 84% 48%;
 
   --destructive-foreground: 0 0% 98%;
 
   --input: 0 0% 72%;
-  --ring: 217 91% 48%;
-  --chart-1: 217 91% 42%;
-  --chart-2: 200 88% 38%;
-  --chart-3: 173 80% 35%;
-  --chart-4: 142 76% 32%;
-  --chart-5: 27 87% 45%;
+  --ring: 188 88% 45%;
+  --chart-1: 188 88% 40%;
+  --chart-2: 200 82% 42%;
+  --chart-3: 165 72% 38%;
+  --chart-4: 48 90% 50%;
+  --chart-5: 12 88% 54%;
 
   --font-sans: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-serif: Georgia, serif;
@@ -262,6 +262,12 @@
  * need to be distinguished from eachother visually.
  */
 @layer utilities {
+  /* Sidebar gradient background */
+  [data-slot="sidebar-inner"] {
+    background-image:
+      radial-gradient(60rem 30rem at 110% -10%, hsl(190 100% 92% / .35), transparent 40%),
+      linear-gradient(to bottom, hsl(182 72% 94%), hsl(188 82% 92%));
+  }
   /* Prevent iOS auto-zoom on form fields by ensuring >=16px font-size on small screens */
   @media (max-width: 640px) {
     input, select, textarea {
