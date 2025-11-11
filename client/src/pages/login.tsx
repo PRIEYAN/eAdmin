@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Building2 } from "lucide-react";
+import { Building2, Lock } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { useToast } from "@/hooks/use-toast";
 import { api } from "@/lib/api";
@@ -61,6 +61,16 @@ export default function LoginPage() {
           <div>
             <CardTitle className="text-2xl font-bold">E-Venue Admin</CardTitle>
             <CardDescription>Sign in to manage exam venues and teachers</CardDescription>
+          </div>
+          <div className="flex flex-wrap justify-center gap-2 pt-1">
+            <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-xs ring-1 ring-primary/20">
+              <Building2 className="w-3.5 h-3.5" />
+              Admin
+            </span>
+            <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-500/10 text-slate-600 dark:text-slate-300 text-xs ring-1 ring-slate-300/30">
+              <Lock className="w-3.5 h-3.5" />
+              Secure
+            </span>
           </div>
         </CardHeader>
         <CardContent>

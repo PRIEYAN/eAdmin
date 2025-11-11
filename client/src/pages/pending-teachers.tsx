@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, UserCheck, RotateCcw } from "lucide-react";
+import { Search, UserCheck, RotateCcw, Users, Building2, CalendarDays } from "lucide-react";
 import type { Teacher } from "@shared/schema";
 import {
   Table,
@@ -76,6 +76,24 @@ export default function PendingTeachersPage() {
           <p className="text-muted-foreground mt-2">
             {isLoading ? "Loading..." : `${filteredTeachers.length} pending verification`}
           </p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-yellow-500/10 text-yellow-700 dark:text-yellow-400 text-xs ring-1 ring-yellow-300/30">
+              <Users className="w-3.5 h-3.5" />
+              Pending
+            </span>
+            <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-xs ring-1 ring-primary/20">
+              <UserCheck className="w-3.5 h-3.5" />
+              Verification
+            </span>
+            <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 text-xs ring-1 ring-blue-300/30">
+              <Building2 className="w-3.5 h-3.5" />
+              Venues
+            </span>
+            <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-400 text-xs ring-1 ring-purple-300/30">
+              <CalendarDays className="w-3.5 h-3.5" />
+              Schedule
+            </span>
+          </div>
         </div>
         
        <Button onClick={fetchTeachers} variant="destructive" className="shadow-sm hover:shadow transition-all" data-testid="button-reset-all">

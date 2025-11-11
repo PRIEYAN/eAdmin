@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api";
 import { saveAs } from "file-saver";
 import * as XLSX from "xlsx";
+import { CalendarDays, FileSpreadsheet, Building2 } from "lucide-react";
 
 export default function BookedVenuesPage() {
   const [venues, setVenues] = useState<any[]>([]);
@@ -76,6 +77,20 @@ export default function BookedVenuesPage() {
               ? "Loading..."
               : `${venues.length} venues found`}
           </p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-400 text-xs ring-1 ring-purple-300/30">
+              <CalendarDays className="w-3.5 h-3.5" />
+              Calendar
+            </span>
+            <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-xs ring-1 ring-primary/20">
+              <FileSpreadsheet className="w-3.5 h-3.5" />
+              Export
+            </span>
+            <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 text-xs ring-1 ring-blue-300/30">
+              <Building2 className="w-3.5 h-3.5" />
+              Venues
+            </span>
+          </div>
         </div>
         <Button
           onClick={handleDownloadExcel}

@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Search, Plus, Trash2 } from "lucide-react";
+import { Search, Plus, Trash2, MapPin, CalendarDays, Building2 } from "lucide-react";
 import type { Venue } from "@shared/schema";
 import {
   Table,
@@ -165,6 +165,20 @@ export default function VenuesPage() {
         <p className="text-muted-foreground mt-2">
           {isLoading ? "Loading..." : `${filteredVenues.length} venues available`}
         </p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 text-xs ring-1 ring-blue-300/30">
+            <MapPin className="w-3.5 h-3.5" />
+            Locations
+          </span>
+          <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-400 text-xs ring-1 ring-purple-300/30">
+            <CalendarDays className="w-3.5 h-3.5" />
+            Dates
+          </span>
+          <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-xs ring-1 ring-primary/20">
+            <Building2 className="w-3.5 h-3.5" />
+            Capacity
+          </span>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
